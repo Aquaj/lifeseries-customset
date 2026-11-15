@@ -3,92 +3,110 @@
     {
       "name": "Grian",
       "handle": "Grian",
-      "color": "#e5533d"
+      "color": "#e5533d",
+      "mc": "Grian"
     },
     {
       "name": "Scar",
       "handle": "GoodTimesWithScar",
-      "color": "#3fa66a"
+      "color": "#3fa66a",
+      "mc": "GoodTimeWithScar"
     },
     {
       "name": "Mumbo",
       "handle": "ThatMumboJumbo",
-      "color": "#d9a514"
+      "color": "#d9a514",
+      "mc": "Mumbo"
     },
     {
       "name": "Gem",
       "handle": "GeminiTayMC",
-      "color": "#c25bd6"
+      "color": "#c25bd6",
+      "mc": "GeminiTay"
     },
     {
       "name": "Bdubs",
       "handle": "bdoubleo",
-      "color": "#4a8fe0"
+      "color": "#4a8fe0",
+      "mc": "BdoubleO100"
     },
     {
       "name": "Joel",
       "handle": "SmallishBeans",
-      "color": "#e0803a"
+      "color": "#e0803a",
+      "mc": "SmallishBeans"
     },
     {
       "name": "Pearl",
       "handle": "PearlescentMoon",
-      "color": "#9fb6d9"
+      "color": "#9fb6d9",
+      "mc": "PearlescentMoon"
     },
     {
       "name": "Impulse",
       "handle": "impulseSV",
-      "color": "#2fb3b3"
+      "color": "#2fb3b3",
+      "mc": "impulseSV"
     },
     {
       "name": "Tango",
       "handle": "TangoTekLP",
-      "color": "#e04a8a"
+      "color": "#e04a8a",
+      "mc": "Tango"
     },
     {
       "name": "Etho",
       "handle": "EthosLab",
-      "color": "#b0b0b0"
+      "color": "#b0b0b0",
+      "mc": "Etho"
     },
     {
       "name": "Martyn",
       "handle": "martyn",
-      "color": "#7c9c3c"
+      "color": "#7c9c3c",
+      "mc": "InTheLittleWood"
     },
     {
       "name": "Cleo",
       "handle": "ZombieCleo",
-      "color": "#8f6bd9"
+      "color": "#8f6bd9",
+      "mc": "ZombieCleo"
     },
     {
       "name": "Jimmy",
       "handle": "Solidaritygaming",
-      "color": "#e8c84a"
+      "color": "#e8c84a",
+      "mc": "Solidarity"
     },
     {
       "name": "Skizz",
       "handle": "MCSkizzleman",
-      "color": "#d96b4a"
+      "color": "#d96b4a",
+      "mc": "Skizzleman"
     },
     {
       "name": "Ren",
       "handle": "Rendog",
-      "color": "#b04a3a"
+      "color": "#b04a3a",
+      "mc": "Renthedog"
     },
     {
       "name": "BigB",
       "handle": "BigBst4tz2",
-      "color": "#4ab07c"
+      "color": "#4ab07c",
+      "mc": "BigBSt4tz2"
     },
     {
       "name": "Lizzie",
       "handle": "LDShadowLady",
-      "color": "#f08fb5"
+      "color": "#f08fb5",
+      "mc": "LDShadowLady"
     },
     {
       "name": "Scott",
       "handle": "Dangthatsalongname",
-      "color": "#5a6fd9"
+      "color": "#5a6fd9",
+      "mc": "Smajor1995"
     },
     {
       "name": "Joey",

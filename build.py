@@ -113,7 +113,8 @@ def main():
             "id": s["id"], "name": s["name"], "year": s.get("year"),
             "color": s.get("color"), "blurb": s.get("blurb"),
             "airing": any((e["published"] or "") >= cutoff for e in eps[s["id"]]),
-            "creators": [{"name": c["name"], "color": c["color"]} for c in cast],
+            "creators": [{"name": c["name"], "color": c["color"],
+                          "head": (ROOT / "site" / "heads" / f"{c['name']}.png").exists()} for c in cast],
             "episodes": sorted(eps[s["id"]], key=lambda e: e["session"]),
         })
 
