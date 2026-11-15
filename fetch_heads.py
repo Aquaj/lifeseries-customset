@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Download each creator's current Minecraft skin from Mojang and save the
 face (with hat layer) as site/heads/<name>.png. Run with the venv python
-(needs Pillow). Skins change between seasons; re-run to refresh.
+(needs Pillow).
+
+The current skin is often a costume or a red-life variant, so a hand-picked
+skin wins when present: either a skin file at skins/<name>.png, or a "skin"
+entry in seasons.json holding a textures.minecraft.net URL or texture hash.
 """
 import base64
 import io
@@ -28,14 +32,28 @@ def get(url, tries=5):
             time.sleep(2 * (i + 1))
 
 
-def head(username):
-    uuid = json.loads(get(f"https://api.mojang.com/users/profiles/minecraft/{username}"))["id"]
-    profile = json.loads(get(f"https://sessionserver.mojang.com/session/minecraft/profile/{uuid}"))
-    textures = json.loads(base64.b64decode(profile["properties"][0]["value"]))
-    skin = Image.open(io.BytesIO(get(textures["textures"]["SKIN"]["url"]))).convert("RGBA")
+def crop(skin):
+    skin = skin.convert("RGBA")
     face = skin.crop((8, 8, 16, 16))
     face.alpha_composite(skin.crop((40, 8, 48, 16)))  # hat / overlay layer
     return face.resize((64, 64), Image.NEAREST)
+
+
+def head(c):
+    local = ROOT / "skins" / f"{c['name']}.png"
+    if local.exists():
+        return crop(Image.open(local)), "skins/ file"
+    if c.get("skin"):
+        url = c["skin"] if c["skin"].startswith("http") else "https://textures.minecraft.net/texture/" + c["skin"]
+        return crop(Image.open(io.BytesIO(get(url)))), "pinned texture"
+    return current(c["mc"]), f"current skin of {c['mc']}"
+
+
+def current(username):
+    uuid = json.loads(get(f"https://api.mojang.com/users/profiles/minecraft/{username}"))["id"]
+    profile = json.loads(get(f"https://sessionserver.mojang.com/session/minecraft/profile/{uuid}"))
+    textures = json.loads(base64.b64decode(profile["properties"][0]["value"]))
+    return crop(Image.open(io.BytesIO(get(textures["textures"]["SKIN"]["url"]))))
 
 
 def main():
@@ -44,8 +62,9 @@ def main():
         if not c.get("mc"):
             continue
         try:
-            head(c["mc"]).save(OUT / f"{c['name']}.png", optimize=True)
-            print(f"{c['name']}: ok ({c['mc']})")
+            img, source = head(c)
+            img.save(OUT / f"{c['name']}.png", optimize=True)
+            print(f"{c['name']}: {source}")
         except Exception as exc:
             print(f"{c['name']}: FAILED {exc}", file=sys.stderr)
         time.sleep(1)
