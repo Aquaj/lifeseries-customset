@@ -7,7 +7,7 @@
 <style>
   :root { --bg:#14161a; --card:#1d2026; --line:#2b2f37; --fg:#e8e8ea; --dim:#9aa0aa; --accent:#e5533d; }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.4 system-ui, -apple-system, sans-serif; padding-bottom:120px; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.4 system-ui, -apple-system, sans-serif; padding-bottom:130px; }
   header { padding:16px 16px 8px; }
   h1 { font-size:20px; margin:0 0 4px; }
   .sub { color:var(--dim); font-size:13px; }
@@ -15,7 +15,9 @@
   .chips { display:flex; flex-wrap:wrap; gap:8px; padding:8px 16px; }
   .chip { border:2px solid var(--c); color:var(--fg); background:transparent; border-radius:999px; padding:6px 12px; font-size:14px; cursor:pointer; opacity:.45; }
   .chip.on { background:color-mix(in srgb, var(--c) 30%, transparent); opacity:1; }
-  .session { padding:14px 16px 4px; color:var(--dim); font-size:12px; text-transform:uppercase; letter-spacing:.08em; display:flex; justify-content:space-between; }
+  .tools { display:flex; gap:8px; padding:0 16px 4px; flex-wrap:wrap; }
+  .tools button, .sheet button { background:var(--card); border:1px solid var(--line); color:var(--fg); border-radius:8px; padding:6px 10px; font-size:13px; cursor:pointer; }
+  .session { padding:14px 16px 4px; color:var(--dim); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
   .ep { display:flex; gap:10px; align-items:center; padding:6px 16px; }
   .ep.watched { opacity:.4; }
   .ep img { width:96px; aspect-ratio:16/9; object-fit:cover; border-radius:6px; border-left:4px solid var(--c); flex:none; }
@@ -24,7 +26,7 @@
   .ep .t a { color:inherit; text-decoration:none; }
   .ep .d { color:var(--dim); font-size:12px; }
   .ep .d b { color:var(--c); font-weight:600; }
-  .ep button, .linkbtn { background:none; border:1px solid var(--line); color:var(--dim); border-radius:6px; padding:6px 8px; font-size:13px; cursor:pointer; flex:none; }
+  .ep button { background:none; border:1px solid var(--line); color:var(--dim); border-radius:6px; padding:6px 8px; font-size:13px; cursor:pointer; flex:none; }
   .ep.watched button.w { color:var(--fg); }
   .bar { position:fixed; left:0; right:0; bottom:0; background:color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter:blur(8px); border-top:1px solid var(--line); padding:10px 16px calc(10px + env(safe-area-inset-bottom)); }
   .go { display:block; width:100%; text-align:center; background:var(--accent); color:#fff; font-weight:600; text-decoration:none; border-radius:10px; padding:12px; font-size:16px; }
@@ -32,6 +34,15 @@
   .parts { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; font-size:13px; color:var(--dim); align-items:center; }
   .parts a { color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:3px 8px; text-decoration:none; }
   .empty { padding:40px 16px; color:var(--dim); text-align:center; }
+  .veil { position:fixed; inset:0; background:#000a; display:none; align-items:flex-end; justify-content:center; z-index:10; }
+  .veil.open { display:flex; }
+  .sheet { background:var(--card); width:100%; max-width:560px; max-height:85vh; overflow:auto; border-radius:16px 16px 0 0; padding:16px 0 calc(16px + env(safe-area-inset-bottom)); }
+  .sheet h2 { font-size:17px; margin:0 16px 4px; }
+  .sheet p { margin:0 16px 10px; color:var(--dim); font-size:13px; }
+  .sheet .ep { cursor:pointer; }
+  .sheet .ep:active { background:var(--line); }
+  .sheet .row { display:flex; gap:8px; padding:10px 16px 0; flex-wrap:wrap; }
+  .sheet input { width:100%; background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:8px; padding:8px; font-size:13px; }
 </style>
 </head>
 <body>
@@ -41,11 +52,15 @@
   <select id="season"></select>
 </header>
 <div class="chips" id="chips"></div>
+<div class="tools">
+  <button id="all">All</button><button id="none">None</button><button id="sync">Sync to another device</button>
+</div>
 <main id="list"></main>
 <div class="bar">
   <a class="go" id="go" target="_blank" rel="noopener">▶ Continue</a>
   <div class="parts" id="parts"></div>
 </div>
+<div class="veil" id="veil"><div class="sheet" id="sheet"></div></div>
 
 <script>
 const MAX = 50; // YouTube's watch_videos silently truncates past 50 ids
@@ -54,29 +69,41 @@ const $ = id => document.getElementById(id);
 const store = {
   get: (k, d) => { try { return JSON.parse(localStorage.getItem("lso:" + k)) ?? d; } catch { return d; } },
   set: (k, v) => localStorage.setItem("lso:" + k, JSON.stringify(v)),
+  del: k => localStorage.removeItem("lso:" + k),
 };
 const ytList = ids => "https://www.youtube.com/watch_videos?video_ids=" + ids.join(",");
-const fmt = iso => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+const fmt = iso => iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 async function init() {
   DATA = await (await fetch("data.json", { cache: "no-cache" })).json();
   const sel = $("season");
-  sel.innerHTML = DATA.seasons.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
+  sel.innerHTML = DATA.seasons.map(s => `<option value="${s.id}">${s.name}${s.year ? ` (${s.year})` : ""}</option>`).join("");
   sel.value = store.get("season", DATA.seasons[0].id);
   if (!sel.value) sel.value = DATA.seasons[0].id;
-  sel.hidden = DATA.seasons.length < 2;
   sel.onchange = () => { store.set("season", sel.value); load(); };
+  $("all").onclick = () => { setPicked(season.creators.map(c => c.name)); render(); };
+  $("none").onclick = () => { setPicked([]); render(); };
+  $("sync").onclick = showSync;
+  $("veil").onclick = e => { if (e.target.id === "veil") closeSheet(); };
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) askWhereStopped(); });
+  importSync();
   load();
 }
 
 function load() {
   season = DATA.seasons.find(s => s.id === $("season").value);
   render();
+  askWhereStopped();
 }
 
-const picked = () => store.get(season.id + ":creators", season.creators.map(c => c.name));
-const watched = () => new Set(store.get(season.id + ":watched", []));
+// --- state -----------------------------------------------------------------
+const picked = (s = season) => store.get(s.id + ":creators", s.creators.map(c => c.name));
+const setPicked = (names, s = season) => store.set(s.id + ":creators", names);
+const watched = (s = season) => new Set(store.get(s.id + ":watched", []));
+const setWatched = (set, s = season) => store.set(s.id + ":watched", [...set]);
 const color = name => season.creators.find(c => c.name === name)?.color || "#888";
+const byId = id => season.episodes.find(e => e.id === id);
 
 function visible() {
   const p = picked(), order = season.creators.map(c => c.name);
@@ -85,45 +112,54 @@ function visible() {
     .sort((a, b) => a.session - b.session || order.indexOf(a.creator) - order.indexOf(b.creator));
 }
 
+function markUpTo(id, list = visible()) {
+  const idx = list.findIndex(e => e.id === id), w = watched();
+  list.slice(0, idx + 1).forEach(e => w.add(e.id));
+  setWatched(w);
+}
+
+// --- rendering ---------------------------------------------------------------
+const row = (e, w, extra = "") => `<div class="ep ${w.has(e.id) ? "watched" : ""}" style="--c:${color(e.creator)}" data-id="${e.id}">
+  <a href="https://www.youtube.com/watch?v=${e.id}" target="_blank" rel="noopener"><img loading="lazy" src="https://i.ytimg.com/vi/${e.id}/mqdefault.jpg" alt=""></a>
+  <div class="meta"><div class="t">${esc(e.title)}</div><div class="d"><b>${e.creator}</b>${e.published ? " · " + fmt(e.published) : ""}</div></div>${extra}</div>`;
+
 function render() {
   const p = picked(), w = watched();
   $("chips").innerHTML = season.creators.map(c =>
     `<button class="chip ${p.includes(c.name) ? "on" : ""}" style="--c:${c.color}" data-c="${c.name}">${c.name}</button>`).join("");
   $("chips").querySelectorAll(".chip").forEach(b => b.onclick = () => {
     const cur = picked(), n = b.dataset.c;
-    store.set(season.id + ":creators", cur.includes(n) ? cur.filter(x => x !== n) : [...cur, n]);
+    setPicked(cur.includes(n) ? cur.filter(x => x !== n) : [...cur, n]);
     render();
   });
 
   const eps = visible();
   let html = "", last = null;
   for (const e of eps) {
-    if (e.session !== last) {
-      html += `<div class="session"><span>Episode ${e.session}</span></div>`;
-      last = e.session;
-    }
-    html += `<div class="ep ${w.has(e.id) ? "watched" : ""}" style="--c:${color(e.creator)}">
-      <a href="https://www.youtube.com/watch?v=${e.id}" target="_blank" rel="noopener"><img loading="lazy" src="https://i.ytimg.com/vi/${e.id}/mqdefault.jpg" alt=""></a>
-      <div class="meta"><div class="t"><a href="https://www.youtube.com/watch?v=${e.id}" target="_blank" rel="noopener">${esc(e.title)}</a></div>
-        <div class="d"><b>${e.creator}</b> · ${fmt(e.published)}</div></div>
-      <button class="w" data-id="${e.id}" title="Toggle watched">${w.has(e.id) ? "✓" : "○"}</button>
-      <button class="upto" data-id="${e.id}" title="Mark everything up to here as watched">⤒</button>
-    </div>`;
+    if (e.session !== last) { html += `<div class="session">Episode ${e.session}</div>`; last = e.session; }
+    html += row(e, w, `<button class="w" title="Toggle watched">${w.has(e.id) ? "✓" : "○"}</button>
+      <button class="upto" title="Mark everything up to here as watched">⤒</button>`);
   }
   $("list").innerHTML = html || `<div class="empty">Pick at least one creator.</div>`;
-  $("list").querySelectorAll("button.w").forEach(b => b.onclick = () => toggle(b.dataset.id));
-  $("list").querySelectorAll("button.upto").forEach(b => b.onclick = () => upTo(b.dataset.id));
+  $("list").querySelectorAll(".ep").forEach(el => {
+    const id = el.dataset.id;
+    el.querySelector(".w").onclick = () => { const s = watched(); s.has(id) ? s.delete(id) : s.add(id); setWatched(s); render(); };
+    el.querySelector(".upto").onclick = () => { markUpTo(id); render(); };
+  });
 
   const todo = eps.filter(e => !w.has(e.id)).map(e => e.id);
   const go = $("go");
   if (todo.length) {
-    go.href = ytList(todo.slice(0, MAX));
+    const batch = todo.slice(0, MAX);
+    go.href = ytList(batch);
     go.classList.remove("off");
-    go.textContent = `▶ Continue — ${Math.min(todo.length, MAX)} of ${todo.length} left`;
+    go.textContent = `▶ Continue — ${batch.length} of ${todo.length} left`;
+    go.onclick = () => store.set("pending", { season: season.id, ids: batch, at: Date.now() });
   } else {
     go.removeAttribute("href");
     go.classList.add("off");
     go.textContent = eps.length ? "All caught up 🎉" : "Nothing to play";
+    go.onclick = null;
   }
   const all = eps.map(e => e.id), parts = [];
   for (let i = 0; i < all.length; i += MAX) parts.push(all.slice(i, i + MAX));
@@ -133,21 +169,77 @@ function render() {
     : "";
 }
 
-function toggle(id) {
-  const w = watched();
-  w.has(id) ? w.delete(id) : w.add(id);
-  store.set(season.id + ":watched", [...w]);
-  render();
+// --- "where did you stop?" after Continue -------------------------------------
+function askWhereStopped() {
+  const p = store.get("pending", null);
+  if (!p || p.season !== season.id || $("veil").classList.contains("open")) return;
+  if (Date.now() - p.at < 5000) return; // just tapped Continue; wait until they come back
+  const list = p.ids.map(byId).filter(Boolean), w = watched();
+  openSheet(`<h2>Welcome back — where did you stop?</h2>
+    <p>Tap the last video you finished from the list you opened. Everything before it gets marked as watched.</p>
+    ${list.map(e => row(e, w)).join("")}
+    <div class="row"><button id="p-none">Didn't watch any</button><button id="p-all">Watched them all</button><button id="p-later">Ask me later</button></div>`);
+  $("sheet").querySelectorAll(".ep").forEach(el => el.onclick = ev => {
+    ev.preventDefault(); markUpTo(el.dataset.id, list); done();
+  });
+  const done = () => { store.del("pending"); closeSheet(); render(); };
+  $("p-none").onclick = done;
+  $("p-all").onclick = () => { markUpTo(list.at(-1).id, list); done(); };
+  $("p-later").onclick = closeSheet;
 }
 
-function upTo(id) {
-  const eps = visible(), idx = eps.findIndex(e => e.id === id), w = watched();
-  eps.slice(0, idx + 1).forEach(e => w.add(e.id));
-  store.set(season.id + ":watched", [...w]);
-  render();
+// --- sync link: progress packed into the URL fragment --------------------------
+// #sync=<season>.<picked bitmask>.<watched bits per creator, base36>-...~<season>...
+// Bits index each creator's episodes in session order, which only grows at the end.
+function creatorEps(s, name) {
+  return s.episodes.filter(e => e.creator === name).sort((a, b) => a.session - b.session || (a.published || "").localeCompare(b.published || ""));
 }
 
-function esc(s) { return s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function exportSync() {
+  return DATA.seasons.map(s => {
+    const w = watched(s), p = picked(s);
+    if (!w.size && !store.get(s.id + ":creators", null)) return null;
+    const mask = s.creators.reduce((m, c, i) => p.includes(c.name) ? m | (1n << BigInt(i)) : m, 0n);
+    const per = s.creators.map(c => creatorEps(s, c.name).reduce((b, e, i) => w.has(e.id) ? b | (1n << BigInt(i)) : b, 0n).toString(36));
+    return `${s.id}.${mask.toString(36)}.${per.join("-")}`;
+  }).filter(Boolean).join("~");
+}
+
+function importSync() {
+  const m = location.hash.match(/^#sync=(.+)$/);
+  if (!m) return;
+  history.replaceState(null, "", location.pathname + location.search);
+  if (!confirm("Replace this device's progress with the synced one?")) return;
+  for (const part of m[1].split("~")) {
+    const [id, mask, per] = part.split(".");
+    const s = DATA.seasons.find(x => x.id === id);
+    if (!s || !per) continue;
+    const mk = BigInt(parseInt(mask, 36));
+    setPicked(s.creators.filter((c, i) => (mk >> BigInt(i)) & 1n).map(c => c.name), s);
+    const w = new Set();
+    per.split("-").forEach((bits, ci) => {
+      const c = s.creators[ci]; if (!c) return;
+      const b = [...bits].reduce((acc, ch) => acc * 36n + BigInt(parseInt(ch, 36)), 0n);
+      creatorEps(s, c.name).forEach((e, i) => { if ((b >> BigInt(i)) & 1n) w.add(e.id); });
+    });
+    setWatched(w, s);
+  }
+}
+
+function showSync() {
+  const url = location.origin + location.pathname + location.search + "#sync=" + exportSync();
+  openSheet(`<h2>Sync to another device</h2>
+    <p>Open this link on your other device (phone, TV browser, laptop) to copy your creators and watched episodes there. It's a one-off copy, not a live sync.</p>
+    <div class="row"><input id="s-url" readonly value="${esc(url)}"></div>
+    <div class="row"><button id="s-copy">Copy link</button>${navigator.share ? `<button id="s-share">Share…</button>` : ""}<button id="s-close">Close</button></div>`);
+  $("s-url").onclick = e => e.target.select();
+  $("s-copy").onclick = async () => { await navigator.clipboard.writeText(url); $("s-copy").textContent = "Copied ✓"; };
+  if (navigator.share) $("s-share").onclick = () => navigator.share({ url });
+  $("s-close").onclick = closeSheet;
+}
+
+function openSheet(html) { $("sheet").innerHTML = html; $("veil").classList.add("open"); }
+function closeSheet() { $("veil").classList.remove("open"); }
 
 init();
 </script>

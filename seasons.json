@@ -1,19 +1,171 @@
 {
+  "creators": [
+    {
+      "name": "Grian",
+      "handle": "Grian",
+      "color": "#e5533d"
+    },
+    {
+      "name": "Scar",
+      "handle": "GoodTimesWithScar",
+      "color": "#3fa66a"
+    },
+    {
+      "name": "Mumbo",
+      "handle": "ThatMumboJumbo",
+      "color": "#d9a514"
+    },
+    {
+      "name": "Gem",
+      "handle": "GeminiTayMC",
+      "color": "#c25bd6"
+    },
+    {
+      "name": "Bdubs",
+      "handle": "bdoubleo",
+      "color": "#4a8fe0"
+    },
+    {
+      "name": "Joel",
+      "handle": "SmallishBeans",
+      "color": "#e0803a"
+    },
+    {
+      "name": "Pearl",
+      "handle": "PearlescentMoon",
+      "color": "#9fb6d9"
+    },
+    {
+      "name": "Impulse",
+      "handle": "impulseSV",
+      "color": "#2fb3b3"
+    },
+    {
+      "name": "Tango",
+      "handle": "TangoTekLP",
+      "color": "#e04a8a"
+    },
+    {
+      "name": "Etho",
+      "handle": "EthosLab",
+      "color": "#b0b0b0"
+    },
+    {
+      "name": "Martyn",
+      "handle": "martyn",
+      "color": "#7c9c3c"
+    },
+    {
+      "name": "Cleo",
+      "handle": "ZombieCleo",
+      "color": "#8f6bd9"
+    },
+    {
+      "name": "Jimmy",
+      "handle": "Solidaritygaming",
+      "color": "#e8c84a"
+    },
+    {
+      "name": "Skizz",
+      "handle": "MCSkizzleman",
+      "color": "#d96b4a"
+    },
+    {
+      "name": "Ren",
+      "handle": "Rendog",
+      "color": "#b04a3a"
+    },
+    {
+      "name": "BigB",
+      "handle": "BigBst4tz2",
+      "color": "#4ab07c"
+    },
+    {
+      "name": "Lizzie",
+      "handle": "LDShadowLady",
+      "color": "#f08fb5"
+    },
+    {
+      "name": "Scott",
+      "handle": "Dangthatsalongname",
+      "color": "#5a6fd9"
+    },
+    {
+      "name": "Joey",
+      "handle": "JoeyGraceffa",
+      "color": "#c9a27a"
+    }
+  ],
   "seasons": [
+    {
+      "id": "3rd-life",
+      "name": "3rd Life",
+      "year": 2021,
+      "pattern": "\\b(?:3rd|third)\\s*life\\b"
+    },
+    {
+      "id": "last-life",
+      "name": "Last Life",
+      "year": 2021,
+      "pattern": "\\blast\\s*life\\b"
+    },
+    {
+      "id": "double-life",
+      "name": "Double Life",
+      "year": 2022,
+      "pattern": "\\bdouble\\s*life\\b"
+    },
+    {
+      "id": "limited-life",
+      "name": "Limited Life",
+      "year": 2023,
+      "pattern": "\\blimited\\s*life\\b"
+    },
+    {
+      "id": "secret-life",
+      "name": "Secret Life",
+      "year": 2023,
+      "pattern": "\\bsecret\\s*life\\b"
+    },
+    {
+      "id": "wild-life",
+      "name": "Wild Life",
+      "year": 2024,
+      "pattern": "\\bwild\\s*life\\b"
+    },
+    {
+      "id": "simple-life",
+      "name": "Simple Life",
+      "year": 2025,
+      "pattern": "\\bsimple\\s*life\\b"
+    },
+    {
+      "id": "past-life",
+      "name": "Past Life",
+      "year": 2025,
+      "pattern": "\\bpast\\s*life\\b"
+    },
+    {
+      "id": "nice-life",
+      "name": "Nice Life",
+      "year": 2025,
+      "pattern": "\\bnice\\s*life\\b"
+    },
     {
       "id": "final-life",
       "name": "Final Life",
-      "started": "2026-10-28",
-      "match": "final\\s*life",
-      "creators": [
-        {"name": "Grian",  "channel": "UCR9Gcq0CMm6YgTzsDxAxjOQ", "color": "#e5533d"},
-        {"name": "Scar",   "channel": "UCodkNmk9oWRTIYZdr_HuSlg", "color": "#3fa66a"},
-        {"name": "Mumbo",  "channel": "UChFur_NwVSbUozOcF_F2kMg", "color": "#d9a514"},
-        {"name": "Gem",    "channel": "UCUBsjvdHcwZd3ztdY1Zadcw", "color": "#c25bd6"},
-        {"name": "Bdubs",  "channel": "UClu2e7S8atp6tG2galK9hgg", "color": "#4a8fe0"},
-        {"name": "Joel",   "channel": "UC4qdHN4zHhd4VvNy3zNgXPA", "color": "#e0803a"}
-      ],
-      "overrides": {}
+      "year": 2026,
+      "pattern": "\\bfinal\\s*life\\b"
     }
-  ]
+  ],
+  "exclude": [
+    "\\breal\\s*life\\b",
+    "\\bnew\\s*life\\s*(?:smp|#)",
+    "secret\\s*life\\s+of\\b",
+    "\\bsims\\b",
+    "#shorts",
+    "extended\\s+cut",
+    "superfan"
+  ],
+  "overrides": {}
 }

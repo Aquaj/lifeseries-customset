@@ -1,1 +1,4 @@
 state/
+.venv/
+*.log
+__pycache__/
