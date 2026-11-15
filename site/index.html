@@ -2,65 +2,195 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Life Series — watch order</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101114">
+<title>Life Series — Watch Order</title>
 <style>
-  :root { --bg:#14161a; --card:#1d2026; --line:#2b2f37; --fg:#e8e8ea; --dim:#9aa0aa; --accent:#e5533d; }
+  @font-face { font-family: "Pixelify Sans"; src: url("fonts/pixelify-sans.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+  /* Pixelify's 2 and 5 read as 8 at small sizes: take digits from Silkscreen instead. */
+  @font-face { font-family: "Pixelify Sans"; src: url("fonts/silkscreen.woff2") format("woff2"); font-weight: 400 700; font-display: swap; unicode-range: U+0030-0039; }
+  :root {
+    --bg:#101114; --panel:#1a1c21; --panel2:#24272e; --fg:#ecebe6; --dim:#9a9ca3;
+    --green:#5fd04f; --yellow:#f5d442; --red:#e8453c; --xp:#8dff2f; --accent:#ff5a4d;
+    --px: "Pixelify Sans", ui-monospace, monospace;
+    --bevel: inset 2px 2px 0 rgba(255,255,255,.16), inset -2px -2px 0 rgba(0,0,0,.45);
+  }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.4 system-ui, -apple-system, sans-serif; padding-bottom:130px; }
-  header { padding:16px 16px 8px; }
-  h1 { font-size:20px; margin:0 0 4px; }
-  .sub { color:var(--dim); font-size:13px; }
-  select { background:var(--card); color:var(--fg); border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:15px; margin-top:10px; width:100%; }
-  .chips { display:flex; flex-wrap:wrap; gap:8px; padding:8px 16px; }
-  .chip { border:2px solid var(--c); color:var(--fg); background:transparent; border-radius:999px; padding:6px 12px; font-size:14px; cursor:pointer; opacity:.45; }
-  .chip.on { background:color-mix(in srgb, var(--c) 30%, transparent); opacity:1; }
-  .tools { display:flex; gap:8px; padding:0 16px 4px; flex-wrap:wrap; }
-  .tools button, .sheet button { background:var(--card); border:1px solid var(--line); color:var(--fg); border-radius:8px; padding:6px 10px; font-size:13px; cursor:pointer; }
-  .session { padding:14px 16px 4px; color:var(--dim); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
-  .ep { display:flex; gap:10px; align-items:center; padding:6px 16px; }
-  .ep.watched { opacity:.4; }
-  .ep img { width:96px; aspect-ratio:16/9; object-fit:cover; border-radius:6px; border-left:4px solid var(--c); flex:none; }
+  html { background: var(--bg); }
+  body {
+    margin:0; color:var(--fg); font:15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; padding-bottom:140px;
+    background:
+      linear-gradient(rgba(255,255,255,.022) 2px, transparent 2px) 0 0 / 32px 32px,
+      linear-gradient(90deg, rgba(255,255,255,.022) 2px, transparent 2px) 0 0 / 32px 32px,
+      radial-gradient(900px 420px at 50% -80px, color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%),
+      var(--bg);
+    background-attachment: scroll, scroll, scroll, scroll;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  button { font: inherit; color: inherit; }
+
+  /* ---- masthead ---------------------------------------------------------- */
+  .hero { text-align:center; padding: 28px 0 10px; position:relative; }
+  .hearts { display:flex; gap:8px; justify-content:center; margin-bottom:10px; }
+  .heart { width:30px; height:26px; shape-rendering:crispEdges; filter: drop-shadow(0 3px 0 rgba(0,0,0,.55)); }
+  .title { display:inline-block; position:relative; }
+  h1 { font-family:var(--px); font-weight:700; font-size:clamp(40px, 11vw, 76px); line-height:.95; margin:0; letter-spacing:.03em;
+       color:#f4f3ee; text-shadow: 0 4px 0 #3b3d44, 0 8px 0 rgba(0,0,0,.55); }
+  .kicker { font-family:var(--px); font-weight:600; font-size:clamp(15px, 4vw, 22px); letter-spacing:.42em; margin:16px 0 0 .42em; color:var(--accent); text-shadow:0 2px 0 rgba(0,0,0,.6); }
+  .splash { position:absolute; right:-18px; top:-24px; transform:rotate(-14deg); transform-origin:center; font-family:var(--px); font-weight:600;
+            font-size:clamp(12px, 3.2vw, 17px); color:#ffff55; text-shadow:2px 2px 0 #3f3f15; white-space:nowrap; animation:splash 1.1s ease-in-out infinite alternate; pointer-events:none; }
+  @keyframes splash { from { scale:1; } to { scale:1.07; } }
+  @media (prefers-reduced-motion: reduce) { .splash { animation:none; } }
+  .lede { color:var(--dim); font-size:14px; max-width:520px; margin:18px auto 0; }
+
+  /* ---- Minecraft-ish primitives -------------------------------------------- */
+  .btn { font-family:var(--px); font-weight:500; font-size:15px; color:#fff; text-shadow:2px 2px 0 rgba(0,0,0,.5); cursor:pointer;
+         background:#6d6f76; border:2px solid #000; box-shadow:var(--bevel); padding:7px 12px; border-radius:0; text-decoration:none; display:inline-block; }
+  .btn:hover { background:#7f8590; }
+  .btn:active { box-shadow: inset 2px 2px 0 rgba(0,0,0,.45); translate:0 1px; }
+  .btn.sm { font-size:13px; padding:4px 9px; }
+  .panel { background:var(--panel); border:2px solid #000; box-shadow:var(--bevel), 0 6px 0 rgba(0,0,0,.35); }
+
+  /* ---- season picker --------------------------------------------------------- */
+  .seasons { display:flex; gap:10px; overflow-x:auto; padding:22px 16px 14px; margin:0 -16px; scroll-snap-type:x proximity; scrollbar-width:none; }
+  .seasons::-webkit-scrollbar { display:none; }
+  .season { flex:none; width:148px; text-align:left; cursor:pointer; scroll-snap-align:center; padding:10px 10px 9px; position:relative;
+            background:var(--panel); border:2px solid #000; box-shadow:var(--bevel); color:var(--dim); }
+  .season .sn { font-family:var(--px); font-weight:600; font-size:18px; color:var(--c); display:block; line-height:1.1; text-shadow:0 2px 0 rgba(0,0,0,.5); }
+  .season .sy { font-size:12px; display:block; margin-top:3px; }
+  .season .sb { display:block; height:6px; margin-top:8px; background:#000; border:1px solid #000; }
+  .season .sb i { display:block; height:100%; background:var(--c); }
+  .season.on { background:color-mix(in srgb, var(--c) 16%, var(--panel)); outline:2px solid var(--c); outline-offset:1px; translate:0 -3px; color:var(--fg); }
+  .season .live { position:absolute; top:-9px; right:6px; font-family:var(--px); font-size:11px; background:var(--red); color:#fff; border:2px solid #000; padding:0 5px; letter-spacing:.06em; }
+  @media (min-width: 900px) { .seasons { flex-wrap:wrap; overflow:visible; justify-content:center; } .season { width:calc(20% - 8px); } }
+
+  /* ---- season panel ---------------------------------------------------------- */
+  .panel.head { padding:16px; margin-top:6px; }
+  .ph { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  h2 { font-family:var(--px); font-weight:700; font-size:28px; margin:0; color:var(--accent); text-shadow:0 3px 0 rgba(0,0,0,.55); letter-spacing:.02em; }
+  .blurb { color:var(--dim); font-size:14px; }
+  .xp { margin:16px 0 4px; }
+  .xpl { font-family:var(--px); font-weight:400; font-size:17px; text-align:center; color:var(--xp);
+         text-shadow:2px 2px 0 #000; margin-bottom:3px; position:relative; z-index:1; }
+  .xpb { height:12px; background:#17240c; border:2px solid #000; position:relative; }
+  .xpb i { display:block; height:100%; background:var(--xp); box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -2px 0 rgba(0,0,0,.3); transition:width .25s; }
+  .xpb::after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(90deg, transparent 0 calc(5.555% - 2px), #000 calc(5.555% - 2px) 5.555%); opacity:.55; }
+  .cl { display:flex; align-items:center; gap:8px; margin:18px 0 10px; }
+  .cl span { font-family:var(--px); font-size:15px; letter-spacing:.14em; color:var(--dim); margin-right:auto; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { display:flex; align-items:center; gap:7px; cursor:pointer; padding:3px 9px 3px 3px; background:rgba(0,0,0,.55); border:2px solid #000; font-family:var(--px); font-size:15px; color:var(--c); opacity:.38; filter:saturate(.3); }
+  .chip.on { opacity:1; filter:none; box-shadow:inset 0 -2px 0 var(--c); }
+  .chip small { font-family:system-ui, sans-serif; font-size:11px; color:var(--dim); }
+  .face { width:24px; height:24px; background:var(--c); color:#0b0b0d; display:grid; place-items:center; font-family:var(--px); font-weight:700; font-size:15px;
+          box-shadow:inset -3px -3px 0 rgba(0,0,0,.28), inset 3px 3px 0 rgba(255,255,255,.3); }
+  .hint { color:var(--dim); font-size:12px; margin:14px 0 0; }
+  .hint b { font-family:var(--px); font-weight:500; color:var(--fg); }
+
+  /* ---- episode list ------------------------------------------------------------ */
+  .session { display:flex; align-items:center; gap:10px; margin:28px 0 10px; }
+  .session h3 { font-family:var(--px); font-weight:400; font-size:20px; margin:0; letter-spacing:.08em; }
+  .session .n { color:var(--dim); font-size:12px; }
+  .session::after { content:""; flex:1; height:2px; background:repeating-linear-gradient(90deg, #3a3d45 0 6px, transparent 6px 12px); order:1; }
+  .session .btn { order:2; }
+  .eps { display:grid; gap:8px; }
+  .ep { display:flex; gap:10px; align-items:center; background:var(--panel); border:2px solid #000; box-shadow:var(--bevel); padding:6px; position:relative; }
+  .ep .th { flex:none; width:112px; aspect-ratio:16/9; display:block; background:#000; border:2px solid #000; position:relative; }
+  .ep img { width:100%; height:100%; object-fit:cover; display:block; }
   .ep .meta { flex:1; min-width:0; }
-  .ep .t { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .ep .t a { color:inherit; text-decoration:none; }
-  .ep .d { color:var(--dim); font-size:12px; }
-  .ep .d b { color:var(--c); font-weight:600; }
-  .ep button { background:none; border:1px solid var(--line); color:var(--dim); border-radius:6px; padding:6px 8px; font-size:13px; cursor:pointer; flex:none; }
-  .ep.watched button.w { color:var(--fg); }
-  .bar { position:fixed; left:0; right:0; bottom:0; background:color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter:blur(8px); border-top:1px solid var(--line); padding:10px 16px calc(10px + env(safe-area-inset-bottom)); }
-  .go { display:block; width:100%; text-align:center; background:var(--accent); color:#fff; font-weight:600; text-decoration:none; border-radius:10px; padding:12px; font-size:16px; }
-  .go.off { background:var(--line); pointer-events:none; }
-  .parts { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; font-size:13px; color:var(--dim); align-items:center; }
-  .parts a { color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:3px 8px; text-decoration:none; }
-  .empty { padding:40px 16px; color:var(--dim); text-align:center; }
-  .veil { position:fixed; inset:0; background:#000a; display:none; align-items:flex-end; justify-content:center; z-index:10; }
+  .ep .who { font-family:var(--px); font-size:14px; color:var(--c); display:inline-flex; align-items:center; gap:6px; }
+  .ep .who .face { width:16px; height:16px; font-size:11px; box-shadow:inset -2px -2px 0 rgba(0,0,0,.28), inset 2px 2px 0 rgba(255,255,255,.3); }
+  .ep .who time { font-family:system-ui, sans-serif; font-size:11px; color:var(--dim); }
+  .ep .t { font-size:14px; line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:2px; }
+  .ep .acts { display:flex; flex-direction:column; gap:4px; flex:none; }
+  .ep .acts .btn { width:34px; height:30px; padding:0; display:grid; place-items:center; font-size:16px; }
+  .ep.watched { background:#15171b; }
+  .ep.watched .th img { filter:grayscale(1) brightness(.45); }
+  .ep.watched .t, .ep.watched .who { opacity:.45; }
+  .ep.watched .th::after { content:"✓"; position:absolute; inset:0; display:grid; place-items:center; font-family:var(--px); font-size:30px; color:var(--xp); text-shadow:2px 2px 0 #000; }
+  .ep.watched .btn.w { background:#3c8a2b; }
+  @media (min-width: 760px) {
+    .eps { grid-template-columns:repeat(auto-fill, minmax(226px, 1fr)); gap:12px; }
+    .ep { flex-direction:column; align-items:stretch; padding:0; }
+    .ep .th { width:100%; border-width:0 0 2px; }
+    .ep .meta { padding:0 10px; }
+    .ep .acts { flex-direction:row; justify-content:flex-end; padding:0 8px 8px; margin-top:auto; }
+  }
+  .empty { padding:48px 16px; color:var(--dim); text-align:center; font-family:var(--px); font-size:17px; }
+
+  /* ---- footer + continue bar --------------------------------------------------- */
+  footer { margin-top:44px; color:var(--dim); font-size:12px; text-align:center; display:grid; gap:12px; justify-items:center; }
+  .bar { position:fixed; left:0; right:0; bottom:0; z-index:5; background:linear-gradient(transparent, rgba(8,8,10,.92) 34%); padding:26px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .bar .in { max-width:640px; margin:0 auto; }
+  .go { display:block; width:100%; text-align:center; font-size:20px; font-weight:400; padding:12px; background:#3c8a2b; }
+  .go:hover { background:#48a334; }
+  .go.off { background:#3a3c42; color:#9a9ca3; pointer-events:none; }
+  .parts { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:8px; font-size:12px; color:var(--dim); align-items:center; }
+  .parts a { font-family:var(--px); font-size:13px; color:var(--fg); background:rgba(0,0,0,.6); border:2px solid #000; padding:0 7px; text-decoration:none; }
+
+  /* ---- sheets ------------------------------------------------------------------ */
+  .veil { position:fixed; inset:0; background:rgba(0,0,0,.72); display:none; align-items:flex-end; justify-content:center; z-index:10; }
   .veil.open { display:flex; }
-  .sheet { background:var(--card); width:100%; max-width:560px; max-height:85vh; overflow:auto; border-radius:16px 16px 0 0; padding:16px 0 calc(16px + env(safe-area-inset-bottom)); }
-  .sheet h2 { font-size:17px; margin:0 16px 4px; }
-  .sheet p { margin:0 16px 10px; color:var(--dim); font-size:13px; }
-  .sheet .ep { cursor:pointer; }
-  .sheet .ep:active { background:var(--line); }
-  .sheet .row { display:flex; gap:8px; padding:10px 16px 0; flex-wrap:wrap; }
-  .sheet input { width:100%; background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:8px; padding:8px; font-size:13px; }
+  .sheet { width:100%; max-width:600px; max-height:86vh; overflow:auto; padding:18px 14px calc(18px + env(safe-area-inset-bottom)); }
+  .sheet h2 { font-size:22px; }
+  .sheet p { margin:6px 0 12px; color:var(--dim); font-size:13px; }
+  .sheet .eps { grid-template-columns:1fr; gap:6px; }
+  .sheet .ep { flex-direction:row; align-items:center; padding:6px; cursor:pointer; }
+  .sheet .ep .th { width:96px; border-width:2px; }
+  .sheet .ep .meta { padding:0; }
+  .sheet .ep:hover { outline:2px solid var(--accent); }
+  .sheet .row { display:flex; gap:8px; padding-top:12px; flex-wrap:wrap; }
+  .sheet input { width:100%; background:#000; color:var(--fg); border:2px solid #000; box-shadow:inset 0 0 0 1px #3a3d45; padding:9px; font:12px ui-monospace, monospace; }
+  @media (min-width: 640px) { .veil { align-items:center; } }
 </style>
 </head>
 <body>
-<header>
-  <h1>Life Series — watch order</h1>
-  <div class="sub">Every POV, merged by session. Pick your creators, tick what you've seen, hit Continue.</div>
-  <select id="season"></select>
-</header>
-<div class="chips" id="chips"></div>
-<div class="tools">
-  <button id="all">All</button><button id="none">None</button><button id="sync">Sync to another device</button>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="heart" viewBox="0 0 9 8">
+    <path fill="#000" d="M1 0h3v1h1V0h3v1h1v4H8v1H7v1H6v1H3V7H2V6H1V5H0V1h1z"/>
+    <path fill="currentColor" d="M1 1h3v1h1V1h3v4H7v1H6v1H3V6H2V5H1z"/>
+    <path fill="#fff" fill-opacity=".75" d="M2 2h1v1H2z"/>
+    <path fill="#000" fill-opacity=".22" d="M7 2h1v3H7zM6 5h1v1H6zM4 6h2v1H4z"/>
+  </symbol>
+</svg>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="hearts" aria-hidden="true">
+      <svg class="heart" style="color:var(--green)"><use href="#heart"/></svg>
+      <svg class="heart" style="color:var(--yellow)"><use href="#heart"/></svg>
+      <svg class="heart" style="color:var(--red)"><use href="#heart"/></svg>
+    </div>
+    <div class="title">
+      <h1>LIFE SERIES</h1>
+      <div class="splash">Every POV, in order!</div>
+    </div>
+    <div class="kicker">WATCH ORDER</div>
+    <p class="lede">Every creator's episodes, merged session by session. Pick a season and your POVs, then hit Continue to play the next ones on YouTube.</p>
+  </header>
+
+  <nav class="seasons" id="seasons" aria-label="Seasons"></nav>
+
+  <section class="panel head">
+    <div class="ph"><h2 id="s-name"></h2><span class="blurb" id="s-blurb"></span></div>
+    <div class="xp"><div class="xpl" id="xp-label"></div><div class="xpb"><i id="xp-fill"></i></div></div>
+    <div class="cl"><span>POVS</span><button class="btn sm" id="all">All</button><button class="btn sm" id="none">None</button></div>
+    <div class="chips" id="chips"></div>
+    <p class="hint"><b>✓</b> marks one video as watched · <b>⤒</b> marks everything up to it</p>
+  </section>
+
+  <main id="list"></main>
+
+  <footer>
+    <button class="btn sm" id="sync">Sync progress to another device</button>
+    <div>Unofficial fan project. Not affiliated with the Life Series creators, Mojang or YouTube.<br><span id="gen"></span></div>
+  </footer>
 </div>
-<main id="list"></main>
-<div class="bar">
-  <a class="go" id="go" target="_blank" rel="noopener">▶ Continue</a>
+
+<div class="bar"><div class="in">
+  <a class="btn go" id="go" target="_blank" rel="noopener">▶ Continue</a>
   <div class="parts" id="parts"></div>
-</div>
-<div class="veil" id="veil"><div class="sheet" id="sheet"></div></div>
+</div></div>
+<div class="veil" id="veil"><div class="sheet panel" id="sheet"></div></div>
 
 <script>
 const MAX = 50; // YouTube's watch_videos silently truncates past 50 ids
@@ -72,28 +202,27 @@ const store = {
   del: k => localStorage.removeItem("lso:" + k),
 };
 const ytList = ids => "https://www.youtube.com/watch_videos?video_ids=" + ids.join(",");
-const fmt = iso => iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+const fmt = iso => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 async function init() {
   DATA = await (await fetch("data.json", { cache: "no-cache" })).json();
-  const sel = $("season");
-  sel.innerHTML = DATA.seasons.map(s => `<option value="${s.id}">${s.name}${s.year ? ` (${s.year})` : ""}</option>`).join("");
-  sel.value = store.get("season", DATA.seasons[0].id);
-  if (!sel.value) sel.value = DATA.seasons[0].id;
-  sel.onchange = () => { store.set("season", sel.value); load(); };
   $("all").onclick = () => { setPicked(season.creators.map(c => c.name)); render(); };
   $("none").onclick = () => { setPicked([]); render(); };
   $("sync").onclick = showSync;
   $("veil").onclick = e => { if (e.target.id === "veil") closeSheet(); };
+  $("gen").textContent = DATA.generated ? "Episode list updated " + fmt(DATA.generated) + "." : "";
   document.addEventListener("visibilitychange", () => { if (!document.hidden) askWhereStopped(); });
   importSync();
-  load();
+  load(store.get("season", null));
 }
 
-function load() {
-  season = DATA.seasons.find(s => s.id === $("season").value);
+function load(id) {
+  season = DATA.seasons.find(s => s.id === id) || DATA.seasons[0];
+  store.set("season", season.id);
+  document.documentElement.style.setProperty("--accent", season.color || "#ff5a4d");
   render();
+  $("seasons").querySelector(".on")?.scrollIntoView({ block: "nearest", inline: "center" });
   askWhereStopped();
 }
 
@@ -105,9 +234,9 @@ const setWatched = (set, s = season) => store.set(s.id + ":watched", [...set]);
 const color = name => season.creators.find(c => c.name === name)?.color || "#888";
 const byId = id => season.episodes.find(e => e.id === id);
 
-function visible() {
-  const p = picked(), order = season.creators.map(c => c.name);
-  return season.episodes
+function visible(s = season) {
+  const p = picked(s), order = s.creators.map(c => c.name);
+  return s.episodes
     .filter(e => p.includes(e.creator))
     .sort((a, b) => a.session - b.session || order.indexOf(a.creator) - order.indexOf(b.creator));
 }
@@ -119,33 +248,56 @@ function markUpTo(id, list = visible()) {
 }
 
 // --- rendering ---------------------------------------------------------------
-const row = (e, w, extra = "") => `<div class="ep ${w.has(e.id) ? "watched" : ""}" style="--c:${color(e.creator)}" data-id="${e.id}">
-  <a href="https://www.youtube.com/watch?v=${e.id}" target="_blank" rel="noopener"><img loading="lazy" src="https://i.ytimg.com/vi/${e.id}/mqdefault.jpg" alt=""></a>
-  <div class="meta"><div class="t">${esc(e.title)}</div><div class="d"><b>${e.creator}</b>${e.published ? " · " + fmt(e.published) : ""}</div></div>${extra}</div>`;
+const face = name => `<span class="face">${name[0]}</span>`;
+const card = (e, w, acts = "") => `<div class="ep ${w.has(e.id) ? "watched" : ""}" style="--c:${color(e.creator)}" data-id="${e.id}">
+  <a class="th" href="https://www.youtube.com/watch?v=${e.id}" target="_blank" rel="noopener"><img loading="lazy" src="https://i.ytimg.com/vi/${e.id}/mqdefault.jpg" alt=""></a>
+  <div class="meta"><span class="who">${face(e.creator)}${e.creator}${e.published ? `<time>${fmt(e.published)}</time>` : ""}</span><div class="t">${esc(e.title)}</div></div>${acts}</div>`;
+
+function renderSeasons() {
+  $("seasons").innerHTML = DATA.seasons.map(s => {
+    const eps = visible(s), w = watched(s), done = eps.filter(e => w.has(e.id)).length;
+    return `<button class="season ${s.id === season.id ? "on" : ""}" style="--c:${s.color}" data-s="${s.id}">
+      ${s.airing ? `<span class="live">AIRING</span>` : ""}
+      <span class="sn">${s.name}</span><span class="sy">${s.year} · ${s.episodes.length} videos</span>
+      <span class="sb"><i style="width:${eps.length ? 100 * done / eps.length : 0}%"></i></span></button>`;
+  }).join("");
+  $("seasons").querySelectorAll(".season").forEach(b => b.onclick = () => load(b.dataset.s));
+}
 
 function render() {
-  const p = picked(), w = watched();
-  $("chips").innerHTML = season.creators.map(c =>
-    `<button class="chip ${p.includes(c.name) ? "on" : ""}" style="--c:${c.color}" data-c="${c.name}">${c.name}</button>`).join("");
+  const p = picked(), w = watched(), eps = visible();
+  renderSeasons();
+  $("s-name").textContent = season.name;
+  $("s-blurb").textContent = season.blurb || (season.airing ? "The season airing right now." : "");
+
+  const done = eps.filter(e => w.has(e.id)).length;
+  $("xp-label").textContent = eps.length ? `${done} / ${eps.length} watched` : "";
+  $("xp-fill").style.width = (eps.length ? 100 * done / eps.length : 0) + "%";
+
+  $("chips").innerHTML = season.creators.map(c => {
+    const mine = season.episodes.filter(e => e.creator === c.name);
+    return `<button class="chip ${p.includes(c.name) ? "on" : ""}" style="--c:${c.color}" data-c="${c.name}">${face(c.name)}${c.name}<small>${mine.filter(e => w.has(e.id)).length}/${mine.length}</small></button>`;
+  }).join("");
   $("chips").querySelectorAll(".chip").forEach(b => b.onclick = () => {
     const cur = picked(), n = b.dataset.c;
     setPicked(cur.includes(n) ? cur.filter(x => x !== n) : [...cur, n]);
     render();
   });
 
-  const eps = visible();
-  let html = "", last = null;
-  for (const e of eps) {
-    if (e.session !== last) { html += `<div class="session">Episode ${e.session}</div>`; last = e.session; }
-    html += row(e, w, `<button class="w" title="Toggle watched">${w.has(e.id) ? "✓" : "○"}</button>
-      <button class="upto" title="Mark everything up to here as watched">⤒</button>`);
-  }
-  $("list").innerHTML = html || `<div class="empty">Pick at least one creator.</div>`;
+  const sessions = [...new Set(eps.map(e => e.session))];
+  $("list").innerHTML = sessions.map(n => {
+    const group = eps.filter(e => e.session === n);
+    return `<div class="session"><h3>SESSION ${n}</h3><span class="n">${group.length} POV${group.length > 1 ? "s" : ""}</span>
+        <button class="btn sm sess" data-last="${group.at(-1).id}" title="Mark everything up to the end of this session as watched">✓ up to here</button></div>
+      <div class="eps">${group.map(e => card(e, w, `<div class="acts">
+        <button class="btn w" title="Toggle watched">✓</button><button class="btn upto" title="Mark everything up to here as watched">⤒</button></div>`)).join("")}</div>`;
+  }).join("") || `<div class="empty">Pick at least one POV.</div>`;
   $("list").querySelectorAll(".ep").forEach(el => {
     const id = el.dataset.id;
     el.querySelector(".w").onclick = () => { const s = watched(); s.has(id) ? s.delete(id) : s.add(id); setWatched(s); render(); };
     el.querySelector(".upto").onclick = () => { markUpTo(id); render(); };
   });
+  $("list").querySelectorAll(".sess").forEach(b => b.onclick = () => { markUpTo(b.dataset.last); render(); });
 
   const todo = eps.filter(e => !w.has(e.id)).map(e => e.id);
   const go = $("go");
@@ -153,19 +305,18 @@ function render() {
     const batch = todo.slice(0, MAX);
     go.href = ytList(batch);
     go.classList.remove("off");
-    go.textContent = `▶ Continue — ${batch.length} of ${todo.length} left`;
+    go.textContent = todo.length > MAX ? `▶ Continue · next ${MAX} of ${todo.length}` : `▶ Continue · ${todo.length} left`;
     go.onclick = () => store.set("pending", { season: season.id, ids: batch, at: Date.now() });
   } else {
     go.removeAttribute("href");
     go.classList.add("off");
-    go.textContent = eps.length ? "All caught up 🎉" : "Nothing to play";
+    go.textContent = eps.length ? "All caught up!" : "Nothing to play";
     go.onclick = null;
   }
   const all = eps.map(e => e.id), parts = [];
   for (let i = 0; i < all.length; i += MAX) parts.push(all.slice(i, i + MAX));
   $("parts").innerHTML = eps.length
     ? `From the start: ` + parts.map((ids, i) => `<a href="${ytList(ids)}" target="_blank" rel="noopener">${parts.length > 1 ? `Part ${i + 1}` : "Full list"}</a>`).join("")
-      + ` <span>· ${all.length} videos</span>`
     : "";
 }
 
@@ -175,14 +326,13 @@ function askWhereStopped() {
   if (!p || p.season !== season.id || $("veil").classList.contains("open")) return;
   if (Date.now() - p.at < 5000) return; // just tapped Continue; wait until they come back
   const list = p.ids.map(byId).filter(Boolean), w = watched();
-  openSheet(`<h2>Welcome back — where did you stop?</h2>
-    <p>Tap the last video you finished from the list you opened. Everything before it gets marked as watched.</p>
-    ${list.map(e => row(e, w)).join("")}
-    <div class="row"><button id="p-none">Didn't watch any</button><button id="p-all">Watched them all</button><button id="p-later">Ask me later</button></div>`);
-  $("sheet").querySelectorAll(".ep").forEach(el => el.onclick = ev => {
-    ev.preventDefault(); markUpTo(el.dataset.id, list); done();
-  });
+  if (!list.length) return store.del("pending");
+  openSheet(`<h2>Welcome back!</h2>
+    <p>Where did you stop? Tap the last video you finished. Everything before it gets marked as watched.</p>
+    <div class="eps">${list.map(e => card(e, w)).join("")}</div>
+    <div class="row"><button class="btn sm" id="p-none">Didn't watch any</button><button class="btn sm" id="p-all">Watched them all</button><button class="btn sm" id="p-later">Ask me later</button></div>`);
   const done = () => { store.del("pending"); closeSheet(); render(); };
+  $("sheet").querySelectorAll(".ep").forEach(el => el.onclick = ev => { ev.preventDefault(); markUpTo(el.dataset.id, list); done(); });
   $("p-none").onclick = done;
   $("p-all").onclick = () => { markUpTo(list.at(-1).id, list); done(); };
   $("p-later").onclick = closeSheet;
@@ -210,16 +360,17 @@ function importSync() {
   if (!m) return;
   history.replaceState(null, "", location.pathname + location.search);
   if (!confirm("Replace this device's progress with the synced one?")) return;
+  const b36 = str => [...str].reduce((acc, ch) => acc * 36n + BigInt(parseInt(ch, 36)), 0n);
   for (const part of m[1].split("~")) {
     const [id, mask, per] = part.split(".");
     const s = DATA.seasons.find(x => x.id === id);
     if (!s || !per) continue;
-    const mk = BigInt(parseInt(mask, 36));
+    const mk = b36(mask);
     setPicked(s.creators.filter((c, i) => (mk >> BigInt(i)) & 1n).map(c => c.name), s);
     const w = new Set();
     per.split("-").forEach((bits, ci) => {
       const c = s.creators[ci]; if (!c) return;
-      const b = [...bits].reduce((acc, ch) => acc * 36n + BigInt(parseInt(ch, 36)), 0n);
+      const b = b36(bits);
       creatorEps(s, c.name).forEach((e, i) => { if ((b >> BigInt(i)) & 1n) w.add(e.id); });
     });
     setWatched(w, s);
@@ -228,10 +379,10 @@ function importSync() {
 
 function showSync() {
   const url = location.origin + location.pathname + location.search + "#sync=" + exportSync();
-  openSheet(`<h2>Sync to another device</h2>
-    <p>Open this link on your other device (phone, TV browser, laptop) to copy your creators and watched episodes there. It's a one-off copy, not a live sync.</p>
-    <div class="row"><input id="s-url" readonly value="${esc(url)}"></div>
-    <div class="row"><button id="s-copy">Copy link</button>${navigator.share ? `<button id="s-share">Share…</button>` : ""}<button id="s-close">Close</button></div>`);
+  openSheet(`<h2>Sync progress</h2>
+    <p>Open this link on your other device to copy your POVs and watched episodes there. It's a one-off copy, not a live sync.</p>
+    <input id="s-url" readonly value="${esc(url)}">
+    <div class="row"><button class="btn sm" id="s-copy">Copy link</button>${navigator.share ? `<button class="btn sm" id="s-share">Share…</button>` : ""}<button class="btn sm" id="s-close">Close</button></div>`);
   $("s-url").onclick = e => e.target.select();
   $("s-copy").onclick = async () => { await navigator.clipboard.writeText(url); $("s-copy").textContent = "Copied ✓"; };
   if (navigator.share) $("s-share").onclick = () => navigator.share({ url });

@@ -10,6 +10,7 @@ import re
 import sys
 import urllib.request
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -101,13 +102,17 @@ def main():
                 eps[sid].append({"id": vid, "title": title, "creator": c["name"], "session": session,
                                  "published": dates.get(vid)})
 
-    out = {"generated": max(dates.values(), default=None), "seasons": []}
+    now = datetime.now(timezone.utc)
+    cutoff = (now - timedelta(days=14)).isoformat()  # a season with uploads this recent is airing
+    out = {"generated": now.isoformat(timespec="seconds"), "seasons": []}
     for s in reversed(seasons):  # newest season first
         cast = [c for c in cfg["creators"] if any(e["creator"] == c["name"] for e in eps[s["id"]])]
         if not cast:
             continue
         out["seasons"].append({
             "id": s["id"], "name": s["name"], "year": s.get("year"),
+            "color": s.get("color"), "blurb": s.get("blurb"),
+            "airing": any((e["published"] or "") >= cutoff for e in eps[s["id"]]),
             "creators": [{"name": c["name"], "color": c["color"]} for c in cast],
             "episodes": sorted(eps[s["id"]], key=lambda e: e["session"]),
         })

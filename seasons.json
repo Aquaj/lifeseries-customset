@@ -101,61 +101,81 @@
       "id": "3rd-life",
       "name": "3rd Life",
       "year": 2021,
-      "pattern": "\\b(?:3rd|third)\\s*life\\b"
+      "pattern": "\\b(?:3rd|third)\\s*life\\b",
+      "color": "#5fd04f",
+      "blurb": "Three lives. Green, yellow, then red."
     },
     {
       "id": "last-life",
       "name": "Last Life",
       "year": 2021,
-      "pattern": "\\blast\\s*life\\b"
+      "pattern": "\\blast\\s*life\\b",
+      "color": "#e0483e",
+      "blurb": "A random number of lives, and a Boogeyman."
     },
     {
       "id": "double-life",
       "name": "Double Life",
       "year": 2022,
-      "pattern": "\\bdouble\\s*life\\b"
+      "pattern": "\\bdouble\\s*life\\b",
+      "color": "#ee6aa7",
+      "blurb": "Soulmates share one health bar."
     },
     {
       "id": "limited-life",
       "name": "Limited Life",
       "year": 2023,
-      "pattern": "\\blimited\\s*life\\b"
+      "pattern": "\\blimited\\s*life\\b",
+      "color": "#f2b134",
+      "blurb": "24 hours to live, ticking down."
     },
     {
       "id": "secret-life",
       "name": "Secret Life",
       "year": 2023,
-      "pattern": "\\bsecret\\s*life\\b"
+      "pattern": "\\bsecret\\s*life\\b",
+      "color": "#a877f0",
+      "blurb": "A secret task every session."
     },
     {
       "id": "wild-life",
       "name": "Wild Life",
       "year": 2024,
-      "pattern": "\\bwild\\s*life\\b"
+      "pattern": "\\bwild\\s*life\\b",
+      "color": "#35c9a0",
+      "blurb": "A new wildcard every session."
     },
     {
       "id": "simple-life",
       "name": "Simple Life",
       "year": 2025,
-      "pattern": "\\bsimple\\s*life\\b"
+      "pattern": "\\bsimple\\s*life\\b",
+      "color": "#b9bcc4",
+      "blurb": "The April Fools one-off."
     },
     {
       "id": "past-life",
       "name": "Past Life",
       "year": 2025,
-      "pattern": "\\bpast\\s*life\\b"
+      "pattern": "\\bpast\\s*life\\b",
+      "color": "#d39a5b",
+      "blurb": "Back through old Minecraft versions."
     },
     {
       "id": "nice-life",
       "name": "Nice Life",
       "year": 2025,
-      "pattern": "\\bnice\\s*life\\b"
+      "pattern": "\\bnice\\s*life\\b",
+      "color": "#72c8f0",
+      "blurb": "The winter mini-season."
     },
     {
       "id": "final-life",
       "name": "Final Life",
       "year": 2026,
-      "pattern": "\\bfinal\\s*life\\b"
+      "pattern": "\\bfinal\\s*life\\b",
+      "color": "#ff5a4d",
+      "blurb": ""
     }
   ],
   "exclude": [
