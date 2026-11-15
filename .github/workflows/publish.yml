@@ -18,11 +18,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
 
@@ -40,5 +37,19 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Report the artifacts this run can see
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" --jq '[.artifacts[].name] | join(",")' || echo "api-error")
+          echo "::notice::artifacts visible before deploy: ${n:-none}"
       - id: deploy
         uses: actions/deploy-pages@v5
