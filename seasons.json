@@ -1,0 +1,19 @@
+{
+  "seasons": [
+    {
+      "id": "final-life",
+      "name": "Final Life",
+      "started": "2026-10-28",
+      "match": "final\\s*life",
+      "creators": [
+        {"name": "Grian",  "channel": "UCR9Gcq0CMm6YgTzsDxAxjOQ", "color": "#e5533d"},
+        {"name": "Scar",   "channel": "UCodkNmk9oWRTIYZdr_HuSlg", "color": "#3fa66a"},
+        {"name": "Mumbo",  "channel": "UChFur_NwVSbUozOcF_F2kMg", "color": "#d9a514"},
+        {"name": "Gem",    "channel": "UCUBsjvdHcwZd3ztdY1Zadcw", "color": "#c25bd6"},
+        {"name": "Bdubs",  "channel": "UClu2e7S8atp6tG2galK9hgg", "color": "#4a8fe0"},
+        {"name": "Joel",   "channel": "UC4qdHN4zHhd4VvNy3zNgXPA", "color": "#e0803a"}
+      ],
+      "overrides": {}
+    }
+  ]
+}
