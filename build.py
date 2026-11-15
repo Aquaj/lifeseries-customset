@@ -123,6 +123,8 @@ def main():
     for s in out["seasons"]:
         print(f"{s['name']:13} {len(s['creators']):2} creators {len(s['episodes']):4} videos")
     print(f"{failures} RSS failure(s)")
+    if failures and failures >= len(cfg["creators"]):
+        sys.exit("every RSS feed failed; not publishing a stale list as fresh")
 
 
 if __name__ == "__main__":

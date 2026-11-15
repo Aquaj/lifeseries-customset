@@ -1,4 +1,4 @@
-state/
 .venv/
 *.log
 __pycache__/
+site/data.json

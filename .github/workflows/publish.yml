@@ -1,0 +1,43 @@
+name: Refresh and publish
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 */6 * * *" # four times a day; new episodes mostly land Friday ~17:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the episode list from YouTube RSS
+        run: python3 build.py
+
+      - name: Record newly seen uploads
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state
+          git diff --cached --quiet || { git commit -m "Record new uploads"; git push; }
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
