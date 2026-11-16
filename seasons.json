@@ -4,114 +4,133 @@
       "name": "Grian",
       "handle": "Grian",
       "color": "#e5533d",
-      "mc": "Grian"
+      "mc": "Grian",
+      "subs": 8920000
     },
     {
       "name": "Scar",
       "handle": "GoodTimesWithScar",
       "color": "#3fa66a",
-      "mc": "GoodTimeWithScar"
+      "mc": "GoodTimeWithScar",
+      "subs": 2220000
     },
     {
       "name": "Mumbo",
       "handle": "ThatMumboJumbo",
       "color": "#d9a514",
-      "mc": "Mumbo"
+      "mc": "Mumbo",
+      "subs": 9790000
     },
     {
       "name": "Gem",
       "handle": "GeminiTayMC",
       "color": "#c25bd6",
-      "mc": "GeminiTay"
+      "mc": "GeminiTay",
+      "subs": 2250000
     },
     {
       "name": "Bdubs",
       "handle": "bdoubleo",
       "color": "#4a8fe0",
-      "mc": "BdoubleO100"
+      "mc": "BdoubleO100",
+      "subs": 2090000
     },
     {
       "name": "Joel",
       "handle": "SmallishBeans",
       "color": "#e0803a",
-      "mc": "SmallishBeans"
+      "mc": "SmallishBeans",
+      "subs": 4060000
     },
     {
       "name": "Pearl",
       "handle": "PearlescentMoon",
       "color": "#9fb6d9",
-      "mc": "PearlescentMoon"
+      "mc": "PearlescentMoon",
+      "subs": 842000
     },
     {
       "name": "Impulse",
       "handle": "impulseSV",
       "color": "#2fb3b3",
-      "mc": "impulseSV"
+      "mc": "impulseSV",
+      "subs": 1310000
     },
     {
       "name": "Tango",
       "handle": "TangoTekLP",
       "color": "#e04a8a",
-      "mc": "Tango"
+      "mc": "Tango",
+      "subs": 1200000
     },
     {
       "name": "Etho",
       "handle": "EthosLab",
       "color": "#b0b0b0",
-      "mc": "Etho"
+      "mc": "Etho",
+      "subs": 2660000
     },
     {
       "name": "Martyn",
       "handle": "martyn",
       "color": "#7c9c3c",
-      "mc": "InTheLittleWood"
+      "mc": "InTheLittleWood",
+      "subs": 291000
     },
     {
       "name": "Cleo",
       "handle": "ZombieCleo",
       "color": "#8f6bd9",
-      "mc": "ZombieCleo"
+      "mc": "ZombieCleo",
+      "subs": 397000
     },
     {
       "name": "Jimmy",
       "handle": "Solidaritygaming",
       "color": "#e8c84a",
-      "mc": "SolidarityGaming"
+      "mc": "SolidarityGaming",
+      "subs": 1370000
     },
     {
       "name": "Skizz",
       "handle": "MCSkizzleman",
       "color": "#d96b4a",
-      "mc": "Skizzleman"
+      "mc": "Skizzleman",
+      "subs": 232000
     },
     {
       "name": "Ren",
       "handle": "Rendog",
       "color": "#b04a3a",
-      "mc": "Renthedog"
+      "mc": "Renthedog",
+      "subs": 719000
     },
     {
       "name": "BigB",
       "handle": "BigBst4tz2",
       "color": "#4ab07c",
-      "mc": "BigBSt4tz2"
+      "mc": "BigBSt4tz2",
+      "subs": 3270000
     },
     {
       "name": "Lizzie",
       "handle": "LDShadowLady",
       "color": "#f08fb5",
-      "mc": "LDShadowLady"
+      "mc": "LDShadowLady",
+      "subs": 7560000
     },
     {
       "name": "Scott",
       "handle": "Dangthatsalongname",
       "color": "#5a6fd9",
-      "mc": "Smajor1995"
+      "mc": "Smajor1995",
+      "subs": 1490000
     },
     {
       "name": "Joey",
       "handle": "JoeyGraceffa",
-      "color": "#c9a27a"
+      "color": "#c9a27a",
+      "subs": 9380000
     }
   ],
   "seasons": [

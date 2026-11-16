@@ -109,6 +109,7 @@ def main():
     out = {"generated": now.isoformat(timespec="seconds") if refreshed else None, "seasons": []}
     for s in reversed(seasons):  # newest season first
         cast = [c for c in cfg["creators"] if any(e["creator"] == c["name"] for e in eps[s["id"]])]
+        cast.sort(key=lambda c: -c.get("subs", 0))  # default POV order: most-followed first
         if not cast:
             continue
         out["seasons"].append({

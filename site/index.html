@@ -375,18 +375,20 @@ function askWhereStopped() {
 // --- sync link: progress packed into the URL fragment --------------------------
 // #sync=<season>.<picked bitmask>.<watched bits per creator, base36>-...[.<POV order>]~<season>...
 // Bits index each creator's episodes in session order, which only grows at the end.
+// Creators are indexed alphabetically, so a link survives changes to the default display order.
+const canon = s => [...s.creators].sort((a, b) => a.name.localeCompare(b.name));
 function creatorEps(s, name) {
   return s.episodes.filter(e => e.creator === name).sort((a, b) => a.session - b.session || (a.published || "").localeCompare(b.published || ""));
 }
 
 function exportSync() {
   return DATA.seasons.map(s => {
-    const w = watched(s), p = picked(s);
+    const w = watched(s), p = picked(s), cs = canon(s);
     const custom = store.get(s.id + ":order", null);
     if (!w.size && !store.get(s.id + ":creators", null) && !custom) return null;
-    const mask = s.creators.reduce((m, c, i) => p.includes(c.name) ? m | (1n << BigInt(i)) : m, 0n);
-    const per = s.creators.map(c => creatorEps(s, c.name).reduce((b, e, i) => w.has(e.id) ? b | (1n << BigInt(i)) : b, 0n).toString(36));
-    const ord = custom ? "." + order(s).map(n => s.creators.findIndex(c => c.name === n).toString(36)).join("") : "";
+    const mask = cs.reduce((m, c, i) => p.includes(c.name) ? m | (1n << BigInt(i)) : m, 0n);
+    const per = cs.map(c => creatorEps(s, c.name).reduce((b, e, i) => w.has(e.id) ? b | (1n << BigInt(i)) : b, 0n).toString(36));
+    const ord = custom ? "." + order(s).map(n => cs.findIndex(c => c.name === n).toString(36)).join("") : "";
     return `${s.id}.${mask.toString(36)}.${per.join("-")}${ord}`;
   }).filter(Boolean).join("~");
 }
@@ -401,16 +403,17 @@ function importSync() {
     const [id, mask, per, ord] = part.split(".");
     const s = DATA.seasons.find(x => x.id === id);
     if (!s || !per) continue;
+    const cs = canon(s);
     const mk = b36(mask);
-    setPicked(s.creators.filter((c, i) => (mk >> BigInt(i)) & 1n).map(c => c.name), s);
+    setPicked(cs.filter((c, i) => (mk >> BigInt(i)) & 1n).map(c => c.name), s);
     const w = new Set();
     per.split("-").forEach((bits, ci) => {
-      const c = s.creators[ci]; if (!c) return;
+      const c = cs[ci]; if (!c) return;
       const b = b36(bits);
       creatorEps(s, c.name).forEach((e, i) => { if ((b >> BigInt(i)) & 1n) w.add(e.id); });
     });
     setWatched(w, s);
-    if (ord) store.set(s.id + ":order", [...ord].map(ch => s.creators[parseInt(ch, 36)]?.name).filter(Boolean));
+    if (ord) store.set(s.id + ":order", [...ord].map(ch => cs[parseInt(ch, 36)]?.name).filter(Boolean));
     else store.del(s.id + ":order");
   }
 }
