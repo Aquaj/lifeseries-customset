@@ -28,6 +28,7 @@
   }
   .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
   button { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
 
   /* ---- masthead ---------------------------------------------------------- */
   .hero { text-align:center; padding: 28px 0 10px; position:relative; }
@@ -80,6 +81,9 @@
   .chips { display:flex; flex-wrap:wrap; gap:8px; }
   .chip { display:flex; align-items:center; gap:8px; cursor:pointer; padding:3px 9px 3px 3px; background:rgba(0,0,0,.55); border:2px solid #000; font-family:var(--px); font-size:15px; color:var(--c); opacity:.38; filter:saturate(.3); }
   .chip.on { opacity:1; filter:none; box-shadow:inset 0 -2px 0 var(--c); }
+  .chips.re .chip { outline:2px dashed #555a66; outline-offset:1px; }
+  .chips.re .chip.held { outline:2px solid #fff; translate:0 -4px; opacity:1; filter:none; box-shadow:0 4px 0 rgba(0,0,0,.6); }
+  .btn.active { background:#3c8a2b; }
   .chip small { font-family:system-ui, sans-serif; font-size:11px; color:var(--dim); }
   .face { width:28px; height:28px; background:var(--c); color:#0b0b0d; display:grid; place-items:center; font-family:var(--px); font-weight:700; font-size:15px;
           box-shadow:inset -3px -3px 0 rgba(0,0,0,.28), inset 3px 3px 0 rgba(255,255,255,.3); }
@@ -174,9 +178,9 @@
   <section class="panel head">
     <div class="ph"><h2 id="s-name"></h2><span class="blurb" id="s-blurb"></span></div>
     <div class="xp"><div class="xpl" id="xp-label"></div><div class="xpb"><i id="xp-fill"></i></div></div>
-    <div class="cl"><span>POVS</span><button class="btn sm" id="all">All</button><button class="btn sm" id="none">None</button></div>
+    <div class="cl"><span>POVS</span><button class="btn sm" id="all">All</button><button class="btn sm" id="none">None</button><button class="btn sm" id="reset" hidden>Reset</button><button class="btn sm" id="reorder">Reorder</button></div>
     <div class="chips" id="chips"></div>
-    <p class="hint"><b>✓</b> marks one video as watched · <b>⤒</b> marks everything up to it</p>
+    <p class="hint" id="hint"></p>
   </section>
 
   <main id="list"></main>
@@ -210,6 +214,8 @@ async function init() {
   DATA = await (await fetch("data.json", { cache: "no-cache" })).json();
   $("all").onclick = () => { setPicked(season.creators.map(c => c.name)); render(); };
   $("none").onclick = () => { setPicked([]); render(); };
+  $("reorder").onclick = () => { reordering = !reordering; held = null; render(); };
+  $("reset").onclick = () => { store.del(season.id + ":order"); held = null; render(); };
   $("sync").onclick = showSync;
   $("veil").onclick = e => { if (e.target.id === "veil") closeSheet(); };
   $("gen").textContent = DATA.generated ? "Episode list updated " + fmt(DATA.generated) + "." : "";
@@ -220,6 +226,7 @@ async function init() {
 
 function load(id) {
   season = DATA.seasons.find(s => s.id === id) || DATA.seasons[0];
+  reordering = false; held = null;
   store.set("season", season.id);
   document.documentElement.style.setProperty("--accent", season.color || "#ff5a4d");
   render();
@@ -228,6 +235,12 @@ function load(id) {
 }
 
 // --- state -----------------------------------------------------------------
+let reordering = false, held = null;
+// The visitor's own POV order for a season; creators they never moved keep the default order.
+const order = (s = season) => {
+  const names = s.creators.map(c => c.name), mine = store.get(s.id + ":order", []).filter(n => names.includes(n));
+  return [...mine, ...names.filter(n => !mine.includes(n))];
+};
 const picked = (s = season) => store.get(s.id + ":creators", s.creators.map(c => c.name));
 const setPicked = (names, s = season) => store.set(s.id + ":creators", names);
 const watched = (s = season) => new Set(store.get(s.id + ":watched", []));
@@ -236,10 +249,10 @@ const color = name => season.creators.find(c => c.name === name)?.color || "#888
 const byId = id => season.episodes.find(e => e.id === id);
 
 function visible(s = season) {
-  const p = picked(s), order = s.creators.map(c => c.name);
+  const p = picked(s), ord = order(s);
   return s.episodes
     .filter(e => p.includes(e.creator))
-    .sort((a, b) => a.session - b.session || order.indexOf(a.creator) - order.indexOf(b.creator));
+    .sort((a, b) => a.session - b.session || ord.indexOf(a.creator) - ord.indexOf(b.creator));
 }
 
 function markUpTo(id, list = visible()) {
@@ -277,15 +290,33 @@ function render() {
   $("xp-label").textContent = eps.length ? `${done} / ${eps.length} watched` : "";
   $("xp-fill").style.width = (eps.length ? 100 * done / eps.length : 0) + "%";
 
-  $("chips").innerHTML = season.creators.map(c => {
-    const mine = season.episodes.filter(e => e.creator === c.name);
-    return `<button class="chip ${p.includes(c.name) ? "on" : ""}" style="--c:${c.color}" data-c="${c.name}">${face(c.name)}${c.name}<small>${mine.filter(e => w.has(e.id)).length}/${mine.length}</small></button>`;
+  $("chips").classList.toggle("re", reordering);
+  $("chips").innerHTML = order().map(name => {
+    const c = season.creators.find(x => x.name === name), mine = season.episodes.filter(e => e.creator === name);
+    return `<button class="chip ${p.includes(name) ? "on" : ""} ${held === name ? "held" : ""}" style="--c:${c.color}" data-c="${name}">${face(name)}${name}<small>${mine.filter(e => w.has(e.id)).length}/${mine.length}</small></button>`;
   }).join("");
   $("chips").querySelectorAll(".chip").forEach(b => b.onclick = () => {
-    const cur = picked(), n = b.dataset.c;
-    setPicked(cur.includes(n) ? cur.filter(x => x !== n) : [...cur, n]);
+    const n = b.dataset.c;
+    if (!reordering) {
+      const cur = picked();
+      setPicked(cur.includes(n) ? cur.filter(x => x !== n) : [...cur, n]);
+    } else if (held === null || held === n) {
+      held = held === n ? null : n;
+    } else {
+      const ord = order().filter(x => x !== held), from = order().indexOf(held), to = order().indexOf(n);
+      ord.splice(ord.indexOf(n) + (from < to ? 1 : 0), 0, held); // land on the tapped chip's spot
+      store.set(season.id + ":order", ord);
+      held = null;
+    }
     render();
   });
+  $("reorder").textContent = reordering ? "Done" : "Reorder";
+  $("reorder").classList.toggle("active", reordering);
+  $("reset").hidden = !reordering;
+  $("all").hidden = $("none").hidden = reordering;
+  $("hint").innerHTML = reordering
+    ? (held ? `Now tap where <b>${held}</b> should go.` : `Tap a POV to pick it up, then tap the spot it should take. Videos in each session follow this order.`)
+    : `<b>✓</b> marks one video as watched · <b>⤒</b> marks everything up to it`;
 
   const sessions = [...new Set(eps.map(e => e.session))];
   $("list").innerHTML = sessions.map(n => {
@@ -342,7 +373,7 @@ function askWhereStopped() {
 }
 
 // --- sync link: progress packed into the URL fragment --------------------------
-// #sync=<season>.<picked bitmask>.<watched bits per creator, base36>-...~<season>...
+// #sync=<season>.<picked bitmask>.<watched bits per creator, base36>-...[.<POV order>]~<season>...
 // Bits index each creator's episodes in session order, which only grows at the end.
 function creatorEps(s, name) {
   return s.episodes.filter(e => e.creator === name).sort((a, b) => a.session - b.session || (a.published || "").localeCompare(b.published || ""));
@@ -351,10 +382,12 @@ function creatorEps(s, name) {
 function exportSync() {
   return DATA.seasons.map(s => {
     const w = watched(s), p = picked(s);
-    if (!w.size && !store.get(s.id + ":creators", null)) return null;
+    const custom = store.get(s.id + ":order", null);
+    if (!w.size && !store.get(s.id + ":creators", null) && !custom) return null;
     const mask = s.creators.reduce((m, c, i) => p.includes(c.name) ? m | (1n << BigInt(i)) : m, 0n);
     const per = s.creators.map(c => creatorEps(s, c.name).reduce((b, e, i) => w.has(e.id) ? b | (1n << BigInt(i)) : b, 0n).toString(36));
-    return `${s.id}.${mask.toString(36)}.${per.join("-")}`;
+    const ord = custom ? "." + order(s).map(n => s.creators.findIndex(c => c.name === n).toString(36)).join("") : "";
+    return `${s.id}.${mask.toString(36)}.${per.join("-")}${ord}`;
   }).filter(Boolean).join("~");
 }
 
@@ -365,7 +398,7 @@ function importSync() {
   if (!confirm("Replace this device's progress with the synced one?")) return;
   const b36 = str => [...str].reduce((acc, ch) => acc * 36n + BigInt(parseInt(ch, 36)), 0n);
   for (const part of m[1].split("~")) {
-    const [id, mask, per] = part.split(".");
+    const [id, mask, per, ord] = part.split(".");
     const s = DATA.seasons.find(x => x.id === id);
     if (!s || !per) continue;
     const mk = b36(mask);
@@ -377,6 +410,8 @@ function importSync() {
       creatorEps(s, c.name).forEach((e, i) => { if ((b >> BigInt(i)) & 1n) w.add(e.id); });
     });
     setWatched(w, s);
+    if (ord) store.set(s.id + ":order", [...ord].map(ch => s.creators[parseInt(ch, 36)]?.name).filter(Boolean));
+    else store.del(s.id + ":order");
   }
 }
 
