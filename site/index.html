@@ -105,6 +105,11 @@
   .chips.re .chip { outline:2px dashed #555a66; outline-offset:1px; }
   .chips.re .chip.held { outline:2px solid #fff; translate:0 -4px; opacity:1; filter:none; box-shadow:0 4px 0 rgba(0,0,0,.6); }
   .btn.active { background:#3c8a2b; }
+  .chip > * { pointer-events:none; }
+  .chip[draggable="true"] { cursor:grab; }
+  .chip.dragging { opacity:.3; }
+  .chip.drop-before { box-shadow:-6px 0 0 -1px #fff, inset 0 -2px 0 var(--c); }
+  .chip.drop-after { box-shadow:6px 0 0 -1px #fff, inset 0 -2px 0 var(--c); }
   .chip small { font-family:system-ui, sans-serif; font-size:11px; color:var(--dim); }
   .face { width:28px; height:28px; background:var(--c); color:#0b0b0d; display:grid; place-items:center; font-family:var(--px); font-weight:700; font-size:15px;
           box-shadow:inset -3px -3px 0 rgba(0,0,0,.28), inset 3px 3px 0 rgba(255,255,255,.3); }
@@ -256,7 +261,9 @@ function load(id) {
 }
 
 // --- state -----------------------------------------------------------------
-let reordering = false, held = null;
+let reordering = false, held = null, dragging = null;
+// Mouse users can drag POV chips directly; touch browsers handle HTML drag-and-drop poorly, so they get the tap mode.
+const canDrag = matchMedia("(hover: hover) and (pointer: fine)").matches;
 // The visitor's own POV order for a season; creators they never moved keep the default order.
 const order = (s = season) => {
   const names = s.creators.map(c => c.name), mine = store.get(s.id + ":order", []).filter(n => names.includes(n));
@@ -314,7 +321,7 @@ function render() {
   $("chips").classList.toggle("re", reordering);
   $("chips").innerHTML = order().map(name => {
     const c = season.creators.find(x => x.name === name), mine = season.episodes.filter(e => e.creator === name);
-    return `<button class="chip ${p.includes(name) ? "on" : ""} ${held === name ? "held" : ""}" style="--c:${c.color}" data-c="${name}">${face(name)}${name}<small>${mine.filter(e => w.has(e.id)).length}/${mine.length}</small></button>`;
+    return `<button class="chip ${p.includes(name) ? "on" : ""} ${held === name ? "held" : ""}" style="--c:${c.color}" data-c="${name}" draggable="${canDrag}">${face(name)}${name}<small>${mine.filter(e => w.has(e.id)).length}/${mine.length}</small></button>`;
   }).join("");
   $("chips").querySelectorAll(".chip").forEach(b => b.onclick = () => {
     const n = b.dataset.c;
@@ -331,13 +338,42 @@ function render() {
     }
     render();
   });
+  const clearDrop = () => $("chips").querySelectorAll(".drop-before, .drop-after").forEach(x => x.classList.remove("drop-before", "drop-after"));
+  if (canDrag) $("chips").querySelectorAll(".chip").forEach(b => {
+    const n = b.dataset.c;
+    b.ondragstart = e => {
+      dragging = n; held = null;
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", n);
+      requestAnimationFrame(() => b.classList.add("dragging"));
+    };
+    b.ondragover = e => {
+      if (!dragging || dragging === n) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      const r = b.getBoundingClientRect(), after = e.clientX > r.left + r.width / 2;
+      clearDrop();
+      b.classList.add(after ? "drop-after" : "drop-before");
+    };
+    b.ondragleave = () => b.classList.remove("drop-before", "drop-after");
+    b.ondrop = e => {
+      e.preventDefault();
+      if (!dragging || dragging === n) return;
+      const ord = order().filter(x => x !== dragging);
+      ord.splice(ord.indexOf(n) + (b.classList.contains("drop-after") ? 1 : 0), 0, dragging);
+      store.set(season.id + ":order", ord);
+      dragging = null;
+      render();
+    };
+    b.ondragend = () => { dragging = null; clearDrop(); b.classList.remove("dragging"); };
+  });
   $("reorder").textContent = reordering ? "Done" : "Reorder";
   $("reorder").classList.toggle("active", reordering);
   $("reset").hidden = !reordering;
   $("all").hidden = $("none").hidden = reordering;
   $("hint").innerHTML = reordering
-    ? (held ? `Now tap where <b>${held}</b> should go.` : `Tap a POV to pick it up, then tap the spot it should take. Videos in each session follow this order.`)
-    : `<b>✓</b> marks one video as watched · <b>⤒</b> marks everything up to it`;
+    ? (held ? `Now tap where <b>${held}</b> should go.` : `${canDrag ? "Drag a POV, or tap" : "Tap"} one to pick it up, then tap the spot it should take. Videos in each session follow this order.`)
+    : `<b>✓</b> marks one video as watched · <b>⤒</b> marks everything up to it${canDrag ? " · drag POVs to reorder them" : ""}`;
 
   const sessions = [...new Set(eps.map(e => e.session))];
   $("list").innerHTML = sessions.map(n => {

@@ -71,6 +71,11 @@ async def run(a):
             s = (await call("Target.attachToTarget", {"targetId": target, "flatten": True}))["sessionId"]
             await call("Emulation.setDeviceMetricsOverride",
                        {"width": a.width, "height": a.height, "deviceScaleFactor": a.scale, "mobile": a.width < 600}, s)
+            if a.width >= 600:  # headless Chromium reports no mouse; desktop layouts expect one
+                await call("Page.addScriptToEvaluateOnNewDocument", {"source": """
+                    const mm = window.matchMedia.bind(window);
+                    window.matchMedia = q => /hover: hover|pointer: fine/.test(q) ? {matches: true, media: q} : mm(q);
+                """}, s)
             await call("Page.enable", session=s)
             await call("Page.navigate", {"url": f"http://127.0.0.1:{PORT}{a.path}"}, s)
             await asyncio.sleep(a.wait)
