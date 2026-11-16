@@ -1,0 +1,22 @@
+{
+  "name": "Life Series Watch Order",
+  "short_name": "Life Series",
+  "description": "Every creator's episodes merged session by session. Pick your POVs, track what you've seen, continue on YouTube.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101114",
+  "theme_color": "#101114",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

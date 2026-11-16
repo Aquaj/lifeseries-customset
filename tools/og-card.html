@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Source of site/og.png (the link-preview image). See tools/make_icons.py for the command. -->
+<html><head><meta charset="utf-8">
+<style>
+  @font-face { font-family: "Pixelify Sans"; src: url("/site/fonts/pixelify-sans.woff2") format("woff2"); font-weight: 400 700; }
+  html, body { margin:0; width:1200px; height:630px; overflow:hidden; }
+  body { display:flex; flex-direction:column; align-items:center; justify-content:center; color:#f4f3ee; font-family:"Pixelify Sans", monospace;
+    background:
+      linear-gradient(rgba(255,255,255,.03) 2px, transparent 2px) 0 0 / 40px 40px,
+      linear-gradient(90deg, rgba(255,255,255,.03) 2px, transparent 2px) 0 0 / 40px 40px,
+      radial-gradient(1000px 520px at 50% -60px, rgba(255,90,77,.34), transparent 70%), #101114; }
+  .hearts { display:flex; gap:18px; margin-bottom:22px; }
+  .hearts svg { width:72px; height:64px; shape-rendering:crispEdges; filter:drop-shadow(0 6px 0 rgba(0,0,0,.55)); }
+  .title { position:relative; }
+  h1 { font-size:150px; line-height:.95; margin:0; letter-spacing:.03em; text-shadow:0 8px 0 #3b3d44, 0 16px 0 rgba(0,0,0,.55); }
+  .splash { position:absolute; right:-70px; top:-34px; transform:rotate(-14deg); font-weight:600; font-size:34px; color:#ffff55; text-shadow:4px 4px 0 #3f3f15; white-space:nowrap; }
+  .kicker { font-weight:600; font-size:44px; letter-spacing:.42em; margin:34px 0 0 .42em; color:#ff5a4d; text-shadow:0 4px 0 rgba(0,0,0,.6); }
+  .heads { display:flex; gap:10px; margin-top:54px; }
+  .heads img { width:54px; height:54px; image-rendering:pixelated; box-shadow:0 0 0 3px #000, 0 6px 0 3px rgba(0,0,0,.5); }
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="heart" viewBox="0 0 9 8">
+  <path fill="#000" d="M1 0h3v1h1V0h3v1h1v4H8v1H7v1H6v1H3V7H2V6H1V5H0V1h1z"/>
+  <path fill="currentColor" d="M1 1h3v1h1V1h3v4H7v1H6v1H3V6H2V5H1z"/>
+  <path fill="#fff" fill-opacity=".75" d="M2 2h1v1H2z"/>
+  <path fill="#000" fill-opacity=".22" d="M7 2h1v3H7zM6 5h1v1H6zM4 6h2v1H4z"/>
+</symbol></svg>
+<div class="hearts">
+  <svg style="color:#5fd04f"><use href="#heart"/></svg><svg style="color:#f5d442"><use href="#heart"/></svg><svg style="color:#e8453c"><use href="#heart"/></svg>
+</div>
+<div class="title"><h1>LIFE SERIES</h1><div class="splash">Every POV, in order!</div></div>
+<div class="kicker">WATCH ORDER</div>
+<div class="heads" id="heads"></div>
+<script>
+  document.getElementById("heads").innerHTML = "Mumbo Grian Lizzie Joel Etho Gem Scar Bdubs Scott Jimmy Impulse Tango Pearl Ren Cleo Martyn Skizz"
+    .split(" ").map(n => `<img src="/site/heads/${n}.png" alt="">`).join("");
+</script>
+</body></html>

@@ -3,6 +3,7 @@
 
   .venv/bin/python tools/shot.py out.png [--width 390] [--height 844] [--full]
                                          [--js "code run after load"] [--path /]
+                                         [--root site]
 
 Serves site/ on 127.0.0.1, starts chromedp/headless-shell bound to localhost,
 drives it over CDP. Needs `websockets` in the venv.
@@ -25,8 +26,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PORT, CDP, NAME = 8765, 9333, "lso-shot"
 
 
-def serve():
-    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(ROOT / "site"))
+def serve(root):
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(ROOT / root))
     handler.log_message = lambda *a: None
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
@@ -100,6 +101,7 @@ if __name__ == "__main__":
     p.add_argument("--js")
     p.add_argument("--path", default="/")
     p.add_argument("--wait", type=float, default=2.5)
+    p.add_argument("--root", default="site", help="directory to serve, relative to the repo")
     args = p.parse_args()
-    serve()
+    serve(args.root)
     asyncio.run(run(args))
