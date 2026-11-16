@@ -104,7 +104,9 @@ def main():
 
     now = datetime.now(timezone.utc)
     cutoff = (now - timedelta(days=14)).isoformat()  # a season with uploads this recent is airing
-    out = {"generated": now.isoformat(timespec="seconds"), "seasons": []}
+    # With every feed down the list is only as fresh as the committed state: don't date it today.
+    refreshed = failures < len(cfg["creators"])
+    out = {"generated": now.isoformat(timespec="seconds") if refreshed else None, "seasons": []}
     for s in reversed(seasons):  # newest season first
         cast = [c for c in cfg["creators"] if any(e["creator"] == c["name"] for e in eps[s["id"]])]
         if not cast:
@@ -123,8 +125,10 @@ def main():
     for s in out["seasons"]:
         print(f"{s['name']:13} {len(s['creators']):2} creators {len(s['episodes']):4} videos")
     print(f"{failures} RSS failure(s)")
-    if failures and failures >= len(cfg["creators"]):
-        sys.exit("every RSS feed failed; not publishing a stale list as fresh")
+    if failures:
+        # Shows up as an annotation on the GitHub run; the site still publishes from committed state.
+        scope = "every feed" if not refreshed else f"{failures} feed(s)"
+        print(f"::warning::YouTube RSS failed for {scope}; published the last known episode list for those creators")
 
 
 if __name__ == "__main__":
